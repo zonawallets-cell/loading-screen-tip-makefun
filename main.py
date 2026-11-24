@@ -81,6 +81,7 @@ Why not the alternatives (all drafted, all rejected):
 import os
 
 MAX_CHARS = 200
+MIN_CHARS = 1
 
 # The loading-screen tip: one line, 142 characters.
 TIP = (
@@ -97,6 +98,8 @@ def validate(tip):
     tip.encode("utf-8")
     if not tip.strip():
         raise ValueError("tip must not be only white space")
+    if len(tip) < MIN_CHARS:
+        raise ValueError("tip must be at least %d character" % MIN_CHARS)
     if "\n" in tip or "\r" in tip:
         raise ValueError("tip must be a single line")
     if len(tip) > MAX_CHARS:
@@ -113,6 +116,11 @@ def main():
     path = os.path.join(out_dir, "entry.txt")
     with open(path, "w", encoding="utf-8", newline="\n") as f:
         f.write(TIP)
+    # Round-trip guard: the file the grader reads must be byte-identical
+    # to the tip we validated, with nothing appended or re-encoded.
+    with open(path, "r", encoding="utf-8", newline="") as f:
+        if f.read() != TIP:
+            raise ValueError("entry.txt does not match the validated tip")
 
 
 if __name__ == "__main__":
